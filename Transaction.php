@@ -42,13 +42,23 @@ class Transaction {
             $this->pdo->beginTransaction();
  
             // get available amount of the transferer account
-            // $sql = 'SELECT amount FROM accounts WHERE id=:from';
-            // $stmt = $this->pdo->prepare($sql);
-            // $stmt->execute(array(":from" => $from));
-            // $availableAmount = (int) $stmt->fetchColumn();
-            // $stmt->closeCursor();
+             $sql = 'SELECT amount FROM accounts WHERE id=:from';
+             $stmt = $this->pdo->prepare($sql);
+             $stmt->execute(array(":from" => $from));
+             $availableAmount = (int) $stmt->fetchColumn();
+             $stmt->closeCursor();
  
             // ---> to do here ตรวจสอบว่ามีเงินที่จะโอนมีน้อยกว่าในบัญชีหรือไม่
+            if($availableAmount < $amount){
+                return 'จำนวนเงินคงเหลือของคุณไม่เพียงพอ';
+            }
+            if($availableAmount < 0){
+                return 'ยอดเงินคงเหลือของคุณน้อยกว่า ศูนย์';
+            }
+            if($amount <= 0){
+                return 'กรุณากรอกยอดเงินที่เป็นจริง';
+            }
+ 
 
             // deduct from the transferred account
             $sql_update_from = 'UPDATE accounts
@@ -73,6 +83,12 @@ class Transaction {
             $stmt->closeCursor();
  
             // ---> to do here ***************
+            if($availableAmount < 0){
+                return 'ยอดเงินคงเหลือของคุณน้อยกว่า ศูนย์';
+            }
+            if($amount < 0){
+                return 'กรุณากรอกยอดเงินที่เป็นจริง';
+            }
  
             // commit the transaction
             $this->pdo->commit();
